@@ -1,6 +1,6 @@
 # ghost_key_go
 
-A Go port of `ghost_key`, originally written in [Python].
+A Go port of `ghost_key`, originally written in Python.
 
 ## About
 
