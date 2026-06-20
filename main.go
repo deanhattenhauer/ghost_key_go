@@ -52,21 +52,26 @@ func main() {
 		// Normalize case so "S", "s", " S " etc. all behave the same.
 		algo = strings.ToLower(strings.TrimSpace(algo))
 
-		// Defaulkt to MD5 for anything that ins't explicitly "s"; keeps
-		// the branching simple, though this does mean typos silently
-		// fall back to MD5 rather than re-prompting *** WILL ADD FEATURE FOR REPROMPT ***
-		if algo == "s" {
-			storedHash, err = stringToSHA256Hash(password)
+		switch algo {
+		case "s":
+			storedHash, err := stringToSHA256Hash(password)
 			if err != nil {
 				log.Fatal("error generating hash: ", err)
 			}
 			fmt.Printf("Generated SHA256 hash: %s\n", storedHash)
-		} else {
-			storedHash, err = stringToMD5Hash(password)
+		case "m":
+			storedHash, err := stringToMD5Hash(password)
 			if err != nil {
 				log.Fatal("error generating hash: ", err)
 			}
 			fmt.Printf("Generated MD5 hash: %s\n", storedHash)
+		default:
+			// Anything other than "s" or "m" is treated as a hard failure rather
+			// than silently defaulting to one algorithm; avoids the earlier bug
+			// where a typo quietly fell through to MD5.
+			// TODO: replace with a re-prompt loop instead of exiting outright.
+			// TODO cont.: will create promptInput and promptAlgoChoice helper functions.
+			log.Fatal("invalid algorithm choice: must be 's' or 'm'")
 		}
 	}
 }
