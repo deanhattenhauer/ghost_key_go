@@ -29,3 +29,6 @@ func stringToSHA256Hash(password string) (string, error) {
 	}
 	return fmt.Sprintf("%x", h.Sum(nil)), nil
 }
+
+// TODO: Create verify func to checks guess hasshes to storedHash - auto-detecting
+// MD5 vs SHA256 based on the stored hash's length (32 hex chars for MD5, 64 for SHA256).
