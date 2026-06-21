@@ -21,21 +21,17 @@ func main() {
 
 	// Collect target hash from user. Leaving this blank signals "generate
 	// a new hash from a password" instead of checking against an existing one.
-	fmt.Print("Enter target hash (or press Enter to generate one):")
-	storedHash, err := reader.ReadString('\n')
+	storedHash, err := promptInput(reader, "Enter target hash (or press Enter to generate one): ")
 	if err != nil {
 		log.Fatal("error reading input: ", err)
 	}
-	storedHash = strings.TrimSpace(storedHash)
 
 	if storedHash == "" {
 		// No target hash given, so prompt for a password to hash instead.
-		fmt.Print("Enter a password to hash: ")
-		password, err := reader.ReadString('\n')
+		password, err := promptInput(reader, "Enter a password to hash: ")
 		if err != nil {
 			log.Fatal("error reading input: ", err)
 		}
-		password = strings.TrimSpace(password)
 
 		// Don't silently hash an empty string, that's almost certainly
 		// a mistake on the user's part, not an intentional empty password.
@@ -43,36 +39,55 @@ func main() {
 			log.Fatal("no password provided, cannot generate hash")
 		}
 
-		fmt.Print("Hash algorithm - MD5 or SHA256 (m / s): ")
-		algo, err := reader.ReadString('\n')
+		// Loops internally until a valid 's' or 'm' is entered.
+		algo, err := promptAlgoChoice(reader)
 		if err != nil {
 			log.Fatal("error reading input: ", err)
 		}
 
-		// Normalize case so "S", "s", " S " etc. all behave the same.
-		algo = strings.ToLower(strings.TrimSpace(algo))
-
 		switch algo {
 		case "s":
-			storedHash, err := stringToSHA256Hash(password)
+			storedHash, err = stringToSHA256Hash(password)
 			if err != nil {
 				log.Fatal("error generating hash: ", err)
 			}
 			fmt.Printf("Generated SHA256 hash: %s\n", storedHash)
 		case "m":
-			storedHash, err := stringToMD5Hash(password)
+			storedHash, err = stringToMD5Hash(password)
 			if err != nil {
 				log.Fatal("error generating hash: ", err)
 			}
 			fmt.Printf("Generated MD5 hash: %s\n", storedHash)
-		default:
-			// Anything other than "s" or "m" is treated as a hard failure rather
-			// than silently defaulting to one algorithm; avoids the earlier bug
-			// where a typo quietly fell through to MD5.
-			// TODO: replace with a re-prompt loop instead of exiting outright.
-			// TODO cont.: will create promptInput and promptAlgoChoice helper functions.
-			log.Fatal("invalid algorithm choice: must be 's' or 'm'")
 		}
+	}
+}
+
+// promptInput prints prompt, reads a single line from reader, and returns
+// it trimmed of surrounding whitespace/newline. Central place for all
+// user-input collection so callers don't need to repeat the read/trim/error code.
+func promptInput(reader *bufio.Reader, prompt string) (string, error) {
+	fmt.Print(prompt)
+	input, err := reader.ReadString('\n')
+	if err != nil {
+		return "", fmt.Errorf("error reading input: %w", err)
+	}
+	return strings.TrimSpace(input), nil
+}
+
+// promptAlgoChoice repeatedly prompts via promptInput until the user enters
+// a valid algorithm choice ('s' or 'm'), rather than failing on the first
+// invalid input.
+func promptAlgoChoice(reader *bufio.Reader) (string, error) {
+	for {
+		algo, err := promptInput(reader, "Hash algorithm - MD5 or SHA256 (m / s): ")
+		if err != nil {
+			return "", err
+		}
+		algo = strings.ToLower(algo)
+		if algo == "s" || algo == "m" {
+			return algo, nil
+		}
+		fmt.Println("Invalid choice - please enter 's' or 'm'.")
 	}
 }
 
