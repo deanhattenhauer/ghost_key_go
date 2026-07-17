@@ -4,7 +4,7 @@ A Go port of `ghost_key`, originally written in Python.
 
 ## About
 
-This project is a personal exercise in translating existing game logic into idiomatic Go; working through error handling, structs, and control flow as a way to get hands-on experience with the language outside of structured coursework.
+This project is a personal exercise in translating existing logic into idiomatic Go; working through error handling, structs, and control flow as a way to get hands-on experience with the language outside of structured coursework.
 
 ## Status
 
