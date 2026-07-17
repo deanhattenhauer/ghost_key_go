@@ -30,5 +30,29 @@ func stringToSHA256Hash(password string) (string, error) {
 	return fmt.Sprintf("%x", h.Sum(nil)), nil
 }
 
-// TODO: Create verify func to checks guess hasshes to storedHash - auto-detecting
-// MD5 vs SHA256 based on the stored hash's length (32 hex chars for MD5, 64 for SHA256).
+// verify checks whether guess matches storedHash by hashing the guess using
+// the same algorithm as the stored hash. Algorithm is auto-detected by hash
+// length: 32 chars = MD5, 64 chars = SHA256.
+func verify(guess, storedHash string) (bool, error) {
+	var err error
+	switch len(storedHash) {
+	case 32:
+		// MD5 produces a 32 character hex string:
+		guess, err = stringToMD5Hash(guess)
+		if err != nil {
+			return false, fmt.Errorf("failed to hash guess: %w", err)
+		}
+	case 64:
+		// SHA256 produces a 64 character hex string
+		guess, err = stringToSHA256Hash(guess)
+		if err != nil {
+			return false, fmt.Errorf("failed to hash guess: %w", err)
+		}
+	default:
+		// Anything other than 32 or 64 isn't a hash we generated
+		return false, fmt.Errorf("unrecognized hash length: %d", len(storedHash))
+	}
+
+	// Compare the freshly hased guess aginst the stored hash
+	return guess == storedHash, nil
+}
