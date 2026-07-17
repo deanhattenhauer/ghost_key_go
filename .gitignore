@@ -2,3 +2,4 @@
 *.out
 /bin/
 /dist/
+ghost_key_go
