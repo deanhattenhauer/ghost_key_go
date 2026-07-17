@@ -18,4 +18,4 @@ go run main.go
 
 ## Notes
 
-Built and tested on Linux (Pop!_OS) using Neovim + gopls + Delve.
+Built and tested on Linux (Nobara) using Neovim + gopls + Delve.
