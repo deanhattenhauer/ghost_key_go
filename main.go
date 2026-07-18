@@ -56,4 +56,13 @@ func main() {
 			fmt.Printf("Generated MD5 hash: %s\n", storedHash)
 		}
 	}
+
+	result, err := dictionaryAttack(storedHash)
+	if err != nil {
+		log.Fatal("error with dictionary attack: ", err)
+	}
+	if result {
+		return
+	}
+	// TODO: fall back to bruteForceAttack here
 }
